@@ -7,7 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "YelpClient.h"
+#import "Business.h"
+#import "BusinessCell.h"
 
 @interface MainViewController : UIViewController
+@property (weak, nonatomic) IBOutlet UITableView *tableView;
 
 @end

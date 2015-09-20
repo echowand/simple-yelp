@@ -7,16 +7,17 @@
 //
 
 #import "MainViewController.h"
-#import "YelpClient.h"
+#import "FiltersViewController.h"
 
-NSString * const kYelpConsumerKey = @"vxKwwcR_NMQ7WaEiQBK_CA";
-NSString * const kYelpConsumerSecret = @"33QCvh5bIF5jIHR5klQr7RtBDhQ";
-NSString * const kYelpToken = @"uRcRswHFYa1VkDrGV6LAW2F8clGh5JHV";
-NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
+NSString * const kYelpConsumerKey = @"08rnhEivUJbUlM0wICeSEA";
+NSString * const kYelpConsumerSecret = @"eVBFFj7BnVSVeQeEp3scj_zaA4I";
+NSString * const kYelpToken = @"Us5Oz4A9usrhTdmJ-nvnhoTO9wXI6eRb";
+NSString * const kYelpTokenSecret = @"uJbJK83xGrX2kbhXcVS2u5cE_Vc";
 
-@interface MainViewController ()
+@interface MainViewController () <UITableViewDataSource, UITableViewDelegate, FiltersViewControllerDelegate>
 
 @property (nonatomic, strong) YelpClient *client;
+@property (nonatomic, strong) NSArray *businesses;
 
 @end
 
@@ -30,7 +31,12 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
         
         [self.client searchWithTerm:@"Thai" success:^(AFHTTPRequestOperation *operation, id response) {
-            NSLog(@"response: %@", response);
+            //NSLog(@"response: %@", response);
+            NSArray *businessesDictionaries = response[@"businesses"];
+            //NSLog(@"----------- %@", businessesDictionaries);
+            NSLog(@"-------%lu", (unsigned long)businessesDictionaries.count);
+            self.businesses = [Business businessesWithDictionaries:businessesDictionaries ];
+            [self.tableView reloadData];
         } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
             NSLog(@"error: %@", [error description]);
         }];
@@ -42,12 +48,38 @@ NSString * const kYelpTokenSecret = @"mqtKIxMIR4iBtBPZCmCLEb-Dz3Y";
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
+    self.title = @"Yelp";
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Filter" style:UIBarButtonItemStylePlain target:self action:@selector(onFilterButton)];
+    self.tableView.delegate = self;
+    self.tableView.dataSource = self;
+    [self.tableView registerNib: [UINib nibWithNibName:@"BusinessCell" bundle:nil] forCellReuseIdentifier:@"BusinessCell"];
+    //self.tableView.rowHeight = UITableViewAutomaticDimension;
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+- (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
+    return self.businesses.count;
+}
+
+- (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    BusinessCell *cell = [tableView dequeueReusableCellWithIdentifier:@"BusinessCell"];
+    cell.business = self.businesses[indexPath.row];
+    return cell;
+}
+
+-(void) filtersViewController:(FiltersViewController *)filtersViewController didChangeFilters:(NSDictionary *)filters{
+}
+
+- (void) onFilterButton{
+    FiltersViewController *vc = [[FiltersViewController alloc]init];
+    vc.delegate = self;
+    UINavigationController *nvc = [[UINavigationController alloc] initWithRootViewController:vc];
+    [self presentViewController:nvc animated:YES completion:nil];
 }
 
 @end
