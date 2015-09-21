@@ -19,6 +19,8 @@ NSString * const kYelpTokenSecret = @"uJbJK83xGrX2kbhXcVS2u5cE_Vc";
 @property (nonatomic, strong) YelpClient *client;
 @property (nonatomic, strong) NSArray *businesses;
 
+-(void)fetchBusinessWithQuery:(NSString*)query params:(NSDictionary*)params;
+
 @end
 
 @implementation MainViewController
@@ -30,16 +32,8 @@ NSString * const kYelpTokenSecret = @"uJbJK83xGrX2kbhXcVS2u5cE_Vc";
         // You can register for Yelp API keys here: http://www.yelp.com/developers/manage_api_keys
         self.client = [[YelpClient alloc] initWithConsumerKey:kYelpConsumerKey consumerSecret:kYelpConsumerSecret accessToken:kYelpToken accessSecret:kYelpTokenSecret];
         
-        [self.client searchWithTerm:@"Thai" success:^(AFHTTPRequestOperation *operation, id response) {
-            //NSLog(@"response: %@", response);
-            NSArray *businessesDictionaries = response[@"businesses"];
-            //NSLog(@"----------- %@", businessesDictionaries);
-            NSLog(@"-------%lu", (unsigned long)businessesDictionaries.count);
-            self.businesses = [Business businessesWithDictionaries:businessesDictionaries ];
-            [self.tableView reloadData];
-        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-            NSLog(@"error: %@", [error description]);
-        }];
+        [self fetchBusinessWithQuery:@"Restaurants" params:nil];
+        
     }
     return self;
 }
@@ -73,6 +67,22 @@ NSString * const kYelpTokenSecret = @"uJbJK83xGrX2kbhXcVS2u5cE_Vc";
 }
 
 -(void) filtersViewController:(FiltersViewController *)filtersViewController didChangeFilters:(NSDictionary *)filters{
+    [self fetchBusinessWithQuery:@"Restaurants" params:filters];
+    NSLog(@"========fire new networks request %@", filters);
+}
+
+-(void) fetchBusinessWithQuery:(NSString *)query params:(NSDictionary *)params{
+    //NSLog(@"---------%@", params);
+    [self.client searchWithTerm:query params:params success:^(AFHTTPRequestOperation *operation, id response) {
+        //NSLog(@"response: %@", response);
+        NSArray *businessesDictionaries = response[@"businesses"];
+        //NSLog(@"----------- %@", businessesDictionaries);
+        //NSLog(@"-------%lu", (unsigned long)businessesDictionaries.count);
+        self.businesses = [Business businessesWithDictionaries:businessesDictionaries ];
+        [self.tableView reloadData];
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"error: %@", [error description]);
+    }];
 }
 
 - (void) onFilterButton{

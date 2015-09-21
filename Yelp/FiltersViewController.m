@@ -60,8 +60,22 @@
 }
 
 - (void)onSaveButton{
+    //NSLog(@"onSaveButton %@", self.filters);
     [self.delegate filtersViewController:self didChangeFilters:self.filters];
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (NSDictionary*)filters{
+    NSMutableDictionary *filters = [NSMutableDictionary dictionary];
+    if(self.selectedCategories.count > 0){
+        NSMutableArray *names = [NSMutableArray array];
+        for(NSDictionary *category in self.selectedCategories){
+            [names addObject:category[@"code"]];
+        }
+        NSString *categoryFilter = [names componentsJoinedByString:@","];
+        [filters setObject:categoryFilter forKey:@"category_filter"];
+    }
+    return filters;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
